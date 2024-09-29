@@ -1,0 +1,6 @@
+[user]
+	name = sliceofpizzaxd
+	email = theo.mingay@proton.me
+[init]
+	default = branch
+	defaultBranch = main

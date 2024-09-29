@@ -1,0 +1,102 @@
+set shell sh
+set ifs "\n"
+
+# Basic Settings
+set hidden true
+set ignorecase true
+set icons true
+
+map o &mimeopen $f
+map gc cd ~/.config
+map gn cd ~/nfs
+map gd cd ~/Downloads
+map g/ cd /
+map gp cd ~/Pictures
+map gp cd ~/Code
+map gs cd ~/nfs/College/Semester-2
+
+cmd mkdir %{{
+	printf "Directory name: "
+	read ans
+	mkdir $ans
+}}
+
+map a mkdir
+
+cmd touch %{{
+	printf "filename: "
+	read ans
+	touch $ans
+	mimeopen $ans
+}}
+
+map + touch
+
+cmd open &{{
+	case $(file --mime-type -Lb $f) in
+#		text/*) lf -remote "send $id \$$EDITOR \$f";;
+		*/directory) lf -remote "send $id updir";;
+		*) mimeopen "$f";;
+	esac
+}}
+
+map <enter> open
+
+# set command to move trash items instead of removing them
+cmd trash !{{
+	echo "You are about to trash the following items:"
+	for f in $fx; do echo $f; done
+	echo "Proceed? (y/n)"
+	read ans
+	if [ $ans = 'y' ]; then
+		for f in $fx; do mv $f ~/trash & done
+	fi
+}}
+
+map <delete> trash
+
+cmd lfrc_edit ${{
+	nvim ~/.config/lf/lfrc
+	lf -remote "send $id source ~/.config/lf/lfrc"
+}}
+
+map <f-12> lfrc_edit
+
+# compres selected files into zip
+
+cmd zip %{{
+	set -f
+	echo "zip archive filename: "
+	read ans
+	[[ $ans = "*\zip" ]] || ans = "$ans.zip"
+	zip -r $fx
+}}
+
+map <c-z> zip
+
+# extract archive
+cmd extract ${{
+    set -f
+    case $f in
+        *.tar.bz|*.tar.bz2|*.tbz|*.tbz2) tar xjvf $f;;
+        *.tar.gz|*.tgz) tar xzvf $f;;
+        *.tar.xz|*.txz) tar xJvf $f;;
+        *.zip) unzip $f;;
+        *.rar) unrar x $f;;
+        *.7z) 7z x $f;;
+    esac
+}}
+
+map x extract
+
+# git file management
+cmd git_add_dotfile %{{
+	dir="${PWD#$HOME/}"
+	cd ~/.dotfiles
+	if [ ! -d $dir ]; then mkdir -p $dir; fi
+	cd $dir
+	ln $f .
+	git add ${f##*/}
+}}
+
+map <c-g>d git_add_dotfile
